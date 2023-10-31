@@ -2,7 +2,11 @@ package com.example.jwtPractice.Controller;
 
 import com.example.jwtPractice.Models.JwtRequest;
 import com.example.jwtPractice.Models.JwtResponse;
+import com.example.jwtPractice.Models.User;
+import com.example.jwtPractice.Models.UserInfoUserDetails;
 import com.example.jwtPractice.Security.JwtHelper;
+import com.example.jwtPractice.Service.CustomUserDetailsService;
+import com.example.jwtPractice.Service.UserService;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +33,9 @@ public class AuthController {
     @Autowired
     private AuthenticationManager manager;
 
+    @Autowired
+    private UserService userService;
+
 //private Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @PostMapping("/login")
@@ -39,10 +46,10 @@ public class AuthController {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
         String token = this.jwtHelper.generateToken(userDetails);
-
         JwtResponse response = JwtResponse.builder()
                 .token(token)
                 .username(userDetails.getUsername()).build();
+        System.out.println(userDetails.getUsername());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -50,6 +57,7 @@ public class AuthController {
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, password);
         try {
+           // System.out.println("authentication manager working fine");
             manager.authenticate(authentication);
 
 
@@ -63,5 +71,11 @@ public class AuthController {
     public String exceptionHandler() {
         return "Credentials Invalid !!";
     }
+
+    @PostMapping("/addUser")
+    public String addUser(@RequestBody User user){
+        return userService.save(user);
+    }
+
 
 }
